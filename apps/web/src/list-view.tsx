@@ -1,4 +1,5 @@
 import { AddItemForm } from "./add-item-form.js";
+import { ItemRow } from "./item-row.js";
 import { useItems } from "./use-items.js";
 
 export function ListView() {
@@ -16,11 +17,7 @@ export function ListView() {
         <p data-testid="empty-state">No items yet.</p>
       ) : (
         <ul>
-          {data?.map((item) => (
-            <li key={item.id} data-testid="item-row">
-              {item.name} × {item.quantity}
-            </li>
-          ))}
+          {data?.map((item) => <ItemRow key={item.id} item={item} />)}
         </ul>
       )}
     </main>
