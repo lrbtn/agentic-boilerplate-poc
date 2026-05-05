@@ -10,6 +10,12 @@ set -euo pipefail
 MAX_ITERATIONS="${1:-20}"
 STATE_FILE="agent-loop/state"
 PID_FILE="agent-loop/main.pid"
+LOG_DIR="agent-loop/logs"
+
+# Defensive: start.sh creates LOG_DIR, but if it gets removed between runs
+# (manual cleanup, agent misstep, etc.) we want every entry point to recover
+# rather than silently lose the next log redirect.
+mkdir -p "$LOG_DIR"
 
 iter=0
 

@@ -49,6 +49,7 @@ Major versions are pinned in `package.json` (e.g. `^4.0.0`) so the agent loop ha
 
 - NEVER modify `docs/PRD.md` without an explicit `/update-prd` command from a human.
 - NEVER modify `docs/ARCHITECTURE_RULES.md` without an explicit human request.
+- NEVER modify anything under `agent-loop/` — that directory is the loop's own scaffolding (scripts, state, logs, prompt). Touching it from inside an iteration risks corrupting the running loop. If a change is needed, surface it to the human and stop.
 - NEVER skip TDD steps — the `tdd-pattern-check` hook will block you.
 - Tests live in `src/**/*.test.ts` (co-located) for unit tests; `test/e2e/` for e2e.
 - If you find a bug not related to your current issue, open a new issue with `/qa-fail`. Do NOT fix it inline.
