@@ -15,8 +15,10 @@ export class DrizzleItemRepository implements ItemRepository {
     return rows.map(toDomain);
   }
 
-  async findById(_id: string): Promise<Item | undefined> {
-    throw new Error("not implemented");
+  async findById(id: string): Promise<Item | undefined> {
+    const rows = await this.db.select().from(items).where(eq(items.id, id)).limit(1);
+    const row = rows[0];
+    return row === undefined ? undefined : toDomain(row);
   }
 
   async insert(item: Item): Promise<void> {
@@ -29,8 +31,15 @@ export class DrizzleItemRepository implements ItemRepository {
     });
   }
 
-  async update(_item: Item): Promise<void> {
-    throw new Error("not implemented");
+  async update(item: Item): Promise<void> {
+    const updated = await this.db
+      .update(items)
+      .set({ name: item.name, quantity: item.quantity, bought: item.bought })
+      .where(eq(items.id, item.id))
+      .returning({ id: items.id });
+    if (updated.length === 0) {
+      throw new ItemNotFoundError(item.id);
+    }
   }
 
   async delete(id: string): Promise<void> {
