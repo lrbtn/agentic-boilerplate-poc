@@ -1,6 +1,6 @@
-import { asc, desc } from "drizzle-orm";
+import { asc, desc, eq } from "drizzle-orm";
 import type { ItemRepository } from "../application/item-repository.js";
-import { Item } from "../domain/item.js";
+import { Item, ItemNotFoundError } from "../domain/item.js";
 import type { AppDatabase } from "./db.js";
 import { items, type ItemRow } from "./schema.js";
 
@@ -25,8 +25,11 @@ export class DrizzleItemRepository implements ItemRepository {
     });
   }
 
-  async delete(_id: string): Promise<void> {
-    throw new Error("not implemented");
+  async delete(id: string): Promise<void> {
+    const deleted = await this.db.delete(items).where(eq(items.id, id)).returning({ id: items.id });
+    if (deleted.length === 0) {
+      throw new ItemNotFoundError(id);
+    }
   }
 }
 
