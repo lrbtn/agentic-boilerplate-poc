@@ -15,8 +15,14 @@ export class DrizzleItemRepository implements ItemRepository {
     return rows.map(toDomain);
   }
 
-  async insert(_item: Item): Promise<void> {
-    throw new Error("DrizzleItemRepository.insert not implemented");
+  async insert(item: Item): Promise<void> {
+    await this.db.insert(items).values({
+      id: item.id,
+      name: item.name,
+      quantity: item.quantity,
+      bought: item.bought,
+      createdAt: item.createdAt,
+    });
   }
 }
 
