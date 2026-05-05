@@ -3,6 +3,7 @@ import type { Pool } from "pg";
 import { createDb, createPool } from "./db.js";
 import { items } from "./schema.js";
 import { DrizzleItemRepository } from "./drizzle-item-repository.js";
+import { Item } from "../domain/item.js";
 
 const pool: Pool = createPool();
 const db = createDb(pool);
@@ -43,5 +44,20 @@ describe("DrizzleItemRepository.findAll", () => {
     ]);
     const names = (await repo.findAll()).map((i) => i.name);
     expect(names).toEqual(["u-new", "u-old", "b-new", "b-old"]);
+  });
+});
+
+describe("DrizzleItemRepository.insert", () => {
+  it("persists a new Item so findAll returns it with full fields", async () => {
+    const item = Item.create({ name: "milk", quantity: 2 });
+    await repo.insert(item);
+    const all = await repo.findAll();
+    expect(all).toHaveLength(1);
+    const [only] = all;
+    expect(only?.id).toBe(item.id);
+    expect(only?.name).toBe("milk");
+    expect(only?.quantity).toBe(2);
+    expect(only?.bought).toBe(false);
+    expect(only?.createdAt.toISOString()).toBe(item.createdAt.toISOString());
   });
 });
