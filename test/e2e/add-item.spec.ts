@@ -1,6 +1,11 @@
 import { test, expect } from "@playwright/test";
+import { resetDb } from "./reset-db.js";
 
 test.describe("add item", () => {
+  test.beforeEach(async () => {
+    await resetDb();
+  });
+
   test("appends a new Item at the top of the list and resets the form", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByText("No items yet.")).toBeVisible();
