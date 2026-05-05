@@ -6,6 +6,10 @@ test.describe("delete item", () => {
     await resetDb();
   });
 
+  test.afterEach(async () => {
+    await resetDb();
+  });
+
   test("removes the targeted Item and leaves the other in place", async ({ page }) => {
     await page.goto("/");
 
