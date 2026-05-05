@@ -48,11 +48,12 @@ export class Item {
     return new Item(snapshot.id, name, quantity, snapshot.bought, snapshot.createdAt);
   }
 
-  withChanges(changes: { name?: string; quantity?: number }): Item {
+  withChanges(changes: { name?: string; quantity?: number; bought?: boolean }): Item {
     const name = changes.name === undefined ? this.name : validateName(changes.name);
     const quantity =
       changes.quantity === undefined ? this.quantity : validateQuantity(changes.quantity);
-    return new Item(this.id, name, quantity, this.bought, this.createdAt);
+    const bought = changes.bought === undefined ? this.bought : changes.bought;
+    return new Item(this.id, name, quantity, bought, this.createdAt);
   }
 }
 
