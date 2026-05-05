@@ -25,3 +25,8 @@ export const ValidationErrorSchema = z.object({
   error: z.literal("validation"),
   message: z.string(),
 });
+
+export const NotFoundErrorSchema = z.object({
+  error: z.literal("not_found"),
+  message: z.string(),
+});

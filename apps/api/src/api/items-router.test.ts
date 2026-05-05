@@ -1,5 +1,10 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
-import { ItemListSchema, ItemSchema, ValidationErrorSchema } from "@app/contracts";
+import {
+  ItemListSchema,
+  ItemSchema,
+  NotFoundErrorSchema,
+  ValidationErrorSchema,
+} from "@app/contracts";
 import { createApp } from "../main.js";
 import { createDb, createPool } from "../infrastructure/db.js";
 import { items } from "../infrastructure/schema.js";
@@ -90,5 +95,37 @@ describe("POST /items", () => {
     await postItem({ name: "", quantity: 1 });
     const list = ItemListSchema.parse(await (await app.request("/items")).json());
     expect(list).toEqual([]);
+  });
+});
+
+describe("DELETE /items/:id", () => {
+  it("returns 204 with no body and removes the Item", async () => {
+    const created = ItemSchema.parse(
+      await (await postItem({ name: "milk", quantity: 1 })).json(),
+    );
+    const res = await app.request(`/items/${created.id}`, { method: "DELETE" });
+    expect(res.status).toBe(204);
+    expect(await res.text()).toBe("");
+    const list = ItemListSchema.parse(await (await app.request("/items")).json());
+    expect(list.map((i) => i.id)).not.toContain(created.id);
+  });
+
+  it("returns 404 with a structured error when the Item does not exist", async () => {
+    const res = await app.request("/items/00000000-0000-0000-0000-000000000000", {
+      method: "DELETE",
+    });
+    expect(res.status).toBe(404);
+    const body = NotFoundErrorSchema.parse(await res.json());
+    expect(body.error).toBe("not_found");
+    expect(body.message.length).toBeGreaterThan(0);
+  });
+
+  it("only removes the targeted Item", async () => {
+    const a = ItemSchema.parse(await (await postItem({ name: "milk", quantity: 1 })).json());
+    const b = ItemSchema.parse(await (await postItem({ name: "bread", quantity: 1 })).json());
+    const res = await app.request(`/items/${a.id}`, { method: "DELETE" });
+    expect(res.status).toBe(204);
+    const list = ItemListSchema.parse(await (await app.request("/items")).json());
+    expect(list.map((i) => i.id)).toEqual([b.id]);
   });
 });

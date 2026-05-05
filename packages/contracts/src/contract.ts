@@ -1,5 +1,13 @@
 import { initContract } from "@ts-rest/core";
-import { CreateItemInput, ItemListSchema, ItemSchema, ValidationErrorSchema } from "./item.js";
+import { z } from "zod";
+import {
+  CreateItemInput,
+  ItemId,
+  ItemListSchema,
+  ItemSchema,
+  NotFoundErrorSchema,
+  ValidationErrorSchema,
+} from "./item.js";
 
 const c = initContract();
 
@@ -21,5 +29,16 @@ export const itemsContract = c.router({
       400: ValidationErrorSchema,
     },
     summary: "Create a new Item.",
+  },
+  deleteItem: {
+    method: "DELETE",
+    path: "/items/:id",
+    pathParams: z.object({ id: ItemId }),
+    body: z.void(),
+    responses: {
+      204: z.void(),
+      404: NotFoundErrorSchema,
+    },
+    summary: "Delete an Item by id.",
   },
 });
