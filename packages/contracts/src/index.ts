@@ -3,6 +3,7 @@ export {
   ItemListSchema,
   ItemId,
   CreateItemInput,
+  UpdateItemInput,
   ValidationErrorSchema,
   NotFoundErrorSchema,
   type Item,

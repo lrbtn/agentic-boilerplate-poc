@@ -21,6 +21,18 @@ export const CreateItemInput = z.object({
 
 export type CreateItemInput = z.infer<typeof CreateItemInput>;
 
+export const UpdateItemInput = z
+  .object({
+    name: z.string().trim().min(1).max(80).optional(),
+    quantity: z.number().int().min(1).max(999).optional(),
+  })
+  .strict()
+  .refine((v) => v.name !== undefined || v.quantity !== undefined, {
+    message: "at least one of name or quantity is required",
+  });
+
+export type UpdateItemInput = z.infer<typeof UpdateItemInput>;
+
 export const ValidationErrorSchema = z.object({
   error: z.literal("validation"),
   message: z.string(),

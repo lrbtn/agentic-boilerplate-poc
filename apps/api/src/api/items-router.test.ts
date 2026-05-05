@@ -129,3 +129,92 @@ describe("DELETE /items/:id", () => {
     expect(list.map((i) => i.id)).toEqual([b.id]);
   });
 });
+
+async function patchItem(id: string, body: unknown): Promise<Response> {
+  return app.request(`/items/${id}`, {
+    method: "PATCH",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body),
+  });
+}
+
+describe("PATCH /items/:id", () => {
+  it("returns 200 with the updated Item on a name change", async () => {
+    const created = ItemSchema.parse(
+      await (await postItem({ name: "milk", quantity: 1 })).json(),
+    );
+    const res = await patchItem(created.id, { name: "soy milk" });
+    expect(res.status).toBe(200);
+    const body = ItemSchema.parse(await res.json());
+    expect(body.id).toBe(created.id);
+    expect(body.name).toBe("soy milk");
+    expect(body.quantity).toBe(1);
+  });
+
+  it("returns 200 with the updated Item on a quantity change", async () => {
+    const created = ItemSchema.parse(
+      await (await postItem({ name: "milk", quantity: 1 })).json(),
+    );
+    const res = await patchItem(created.id, { quantity: 5 });
+    expect(res.status).toBe(200);
+    const body = ItemSchema.parse(await res.json());
+    expect(body.quantity).toBe(5);
+    expect(body.name).toBe("milk");
+  });
+
+  it("trims the new name before persisting", async () => {
+    const created = ItemSchema.parse(
+      await (await postItem({ name: "milk", quantity: 1 })).json(),
+    );
+    const res = await patchItem(created.id, { name: "  bread  " });
+    expect(res.status).toBe(200);
+    const body = ItemSchema.parse(await res.json());
+    expect(body.name).toBe("bread");
+  });
+
+  it("preserves bought and createdAt across the update", async () => {
+    const created = ItemSchema.parse(
+      await (await postItem({ name: "milk", quantity: 1 })).json(),
+    );
+    const res = await patchItem(created.id, { name: "bread" });
+    const body = ItemSchema.parse(await res.json());
+    expect(body.bought).toBe(false);
+    expect(body.createdAt).toBe(created.createdAt);
+  });
+
+  it("returns 404 with a structured error when the Item does not exist", async () => {
+    const res = await patchItem("00000000-0000-0000-0000-000000000000", { name: "milk" });
+    expect(res.status).toBe(404);
+    const body = NotFoundErrorSchema.parse(await res.json());
+    expect(body.error).toBe("not_found");
+  });
+
+  it.each([
+    { case: "empty body", body: {} },
+    { case: "empty name", body: { name: "" } },
+    { case: "name longer than 80", body: { name: "a".repeat(81) } },
+    { case: "quantity 0", body: { quantity: 0 } },
+    { case: "quantity 1000", body: { quantity: 1000 } },
+    { case: "non-integer quantity", body: { quantity: 1.5 } },
+    { case: "unknown field", body: { name: "ok", colour: "blue" } },
+  ])("returns 400 with a structured error on $case", async ({ body }) => {
+    const created = ItemSchema.parse(
+      await (await postItem({ name: "milk", quantity: 1 })).json(),
+    );
+    const res = await patchItem(created.id, body);
+    expect(res.status).toBe(400);
+    const parsed = ValidationErrorSchema.parse(await res.json());
+    expect(parsed.error).toBe("validation");
+    expect(parsed.message.length).toBeGreaterThan(0);
+  });
+
+  it("does not persist a rejected change", async () => {
+    const created = ItemSchema.parse(
+      await (await postItem({ name: "milk", quantity: 1 })).json(),
+    );
+    await patchItem(created.id, { name: "" });
+    const list = ItemListSchema.parse(await (await app.request("/items")).json());
+    const persisted = list.find((i) => i.id === created.id);
+    expect(persisted?.name).toBe("milk");
+  });
+});

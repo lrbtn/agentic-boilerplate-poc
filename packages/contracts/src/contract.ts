@@ -6,6 +6,7 @@ import {
   ItemListSchema,
   ItemSchema,
   NotFoundErrorSchema,
+  UpdateItemInput,
   ValidationErrorSchema,
 } from "./item.js";
 
@@ -29,6 +30,18 @@ export const itemsContract = c.router({
       400: ValidationErrorSchema,
     },
     summary: "Create a new Item.",
+  },
+  updateItem: {
+    method: "PATCH",
+    path: "/items/:id",
+    pathParams: z.object({ id: ItemId }),
+    body: UpdateItemInput,
+    responses: {
+      200: ItemSchema,
+      400: ValidationErrorSchema,
+      404: NotFoundErrorSchema,
+    },
+    summary: "Apply a partial update to an Item.",
   },
   deleteItem: {
     method: "DELETE",
