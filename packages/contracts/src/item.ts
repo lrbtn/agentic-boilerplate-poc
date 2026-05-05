@@ -25,10 +25,11 @@ export const UpdateItemInput = z
   .object({
     name: z.string().trim().min(1).max(80).optional(),
     quantity: z.number().int().min(1).max(999).optional(),
+    bought: z.boolean().optional(),
   })
   .strict()
-  .refine((v) => v.name !== undefined || v.quantity !== undefined, {
-    message: "at least one of name or quantity is required",
+  .refine((v) => v.name !== undefined || v.quantity !== undefined || v.bought !== undefined, {
+    message: "at least one of name, quantity, or bought is required",
   });
 
 export type UpdateItemInput = z.infer<typeof UpdateItemInput>;
