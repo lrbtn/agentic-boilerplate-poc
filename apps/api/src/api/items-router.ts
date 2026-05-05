@@ -12,6 +12,7 @@ import { deleteItem } from "../application/delete-item.js";
 import { editItem } from "../application/edit-item.js";
 import type { ItemRepository } from "../application/item-repository.js";
 import { listItems } from "../application/list-items.js";
+import { toggleBoughtItem } from "../application/toggle-bought-item.js";
 import { ItemNotFoundError, ItemValidationError, type Item } from "../domain/item.js";
 
 export function createItemsRouter({ repo }: { repo: ItemRepository }): Hono {
@@ -61,7 +62,16 @@ export function createItemsRouter({ repo }: { repo: ItemRepository }): Hono {
       );
     }
     try {
-      const updated = await editItem({ repo, id: parsedId.data, changes: parsedBody.data });
+      const updated =
+        parsedBody.data.bought !== undefined &&
+        parsedBody.data.name === undefined &&
+        parsedBody.data.quantity === undefined
+          ? await toggleBoughtItem({
+              repo,
+              id: parsedId.data,
+              bought: parsedBody.data.bought,
+            })
+          : await editItem({ repo, id: parsedId.data, changes: parsedBody.data });
       return c.json(ItemSchema.parse(toResponse(updated)), 200);
     } catch (err) {
       if (err instanceof ItemValidationError) {
