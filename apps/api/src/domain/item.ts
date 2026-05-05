@@ -12,6 +12,13 @@ export class ItemValidationError extends Error {
   }
 }
 
+export class ItemNotFoundError extends Error {
+  constructor(id: string) {
+    super(`Item not found: ${id}`);
+    this.name = "ItemNotFoundError";
+  }
+}
+
 export interface ItemSnapshot {
   id: string;
   name: string;
