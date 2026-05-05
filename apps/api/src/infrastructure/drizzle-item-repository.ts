@@ -24,6 +24,10 @@ export class DrizzleItemRepository implements ItemRepository {
       createdAt: item.createdAt,
     });
   }
+
+  async delete(_id: string): Promise<void> {
+    throw new Error("not implemented");
+  }
 }
 
 function toDomain(row: ItemRow): Item {
