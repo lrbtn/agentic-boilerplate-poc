@@ -15,6 +15,10 @@ export class DrizzleItemRepository implements ItemRepository {
     return rows.map(toDomain);
   }
 
+  async findById(_id: string): Promise<Item | undefined> {
+    throw new Error("not implemented");
+  }
+
   async insert(item: Item): Promise<void> {
     await this.db.insert(items).values({
       id: item.id,
@@ -23,6 +27,10 @@ export class DrizzleItemRepository implements ItemRepository {
       bought: item.bought,
       createdAt: item.createdAt,
     });
+  }
+
+  async update(_item: Item): Promise<void> {
+    throw new Error("not implemented");
   }
 
   async delete(id: string): Promise<void> {
