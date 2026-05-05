@@ -13,8 +13,9 @@ This repo is the system, not the product:
 - `apps/` — empty until the agent loop starts implementing
 - `.github/workflows/` — CI and the deep code review action
 
-## The 5 phases
+## The 6 phases
 
+0. **BOOTSTRAP** (human + agent grilling) — `/bootstrap-project` configures the toolchain and team conventions in `CLAUDE.md`. One-time, run right after cloning the boilerplate.
 1. **IDEATION** (human + agent grilling) — `/ideation` interrogates a human about a raw business requirement
 2. **PRD** (agent synthesis) — `/create-prd` synthesizes the conversation into `docs/PRD.md`
 3. **ISSUES** (human approval) — `/prd-to-issues` decomposes the PRD into vertical-slice GitHub issues
@@ -27,18 +28,16 @@ When QA fails: `/qa-fail` creates a new bug issue with a proposed failing test. 
 
 ```bash
 # Clone for a new project
-git clone https://github.com/lrbtn/agentic-boilerplate.git my-new-project
+git clone https://github.com/<your-org>/agentic-boilerplate.git my-new-project
 cd my-new-project
 rm -rf .git
 git init
 
-# Install
-pnpm install
-
 # Open Claude Code
 claude
 
-# Inside Claude Code, start phase 1
+# Inside Claude Code, run phase 0 (one-time stack setup), then phase 1
+/bootstrap-project
 /ideation
 ```
 
