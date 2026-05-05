@@ -6,14 +6,16 @@
 
 ## Clean Architecture
 
-For backend services (e.g. NestJS, Hono, Express):
+For the backend (`apps/api`, Hono):
 
 - **Domain layer** — entities, value objects, domain services. Pure TS, no framework dependencies. No imports from infrastructure or API layers.
 - **Application layer** — use cases. Depends on domain only. Defines ports (interfaces) for I/O.
-- **Infrastructure layer** — DB drivers, HTTP clients, file system, queues. Implements ports defined in domain/application.
-- **API layer** — controllers, request DTOs, response shaping. Translates HTTP/RPC to use case invocations.
+- **Infrastructure layer** — Drizzle/Postgres adapters, HTTP clients, file system, queues. Implements ports defined in domain/application.
+- **API layer** — ts-rest route handlers wired into Hono, request DTOs (Zod schemas from `packages/contracts`), response shaping. Translates HTTP to use case invocations.
 
 **Layer dependency rule:** `domain ← application ← infrastructure, api`. Never the reverse.
+
+**Dependency injection in Hono:** Hono has no built-in DI container. Wire dependencies manually via factory functions (e.g. `createInvoiceRouter({ invoices: InvoiceRepository })`) at the composition root (`apps/api/src/main.ts`). Do not reach for a DI library — explicit factory wiring keeps the layers visible.
 
 For frontend:
 

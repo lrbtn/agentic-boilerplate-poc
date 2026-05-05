@@ -9,18 +9,24 @@ This file is a **boilerplate placeholder**. When you start a new project, replac
 ## Stack
 
 - pnpm monorepo (workspaces in `pnpm-workspace.yaml`)
-- `apps/` — application code (filled in during PRD phase)
-- `packages/contracts` — shared types and schemas (created when needed)
-- Tests: Vitest (unit), Playwright (e2e)
+- **Backend:** `apps/api` — Hono `^4` on Node.js
+- **Database:** PostgreSQL `16` (docker-compose) with Drizzle ORM `^0.36`
+- **Frontend:** `apps/web` — React `^18` + Vite `^5`, TanStack Query `^5`, TanStack Router `^1`, Tailwind CSS `^3`
+- **Contracts:** `packages/contracts` — Zod `^3` + ts-rest `^3` (typed end-to-end, no codegen)
+- **Tests:** Vitest `^2` (unit/integration, co-located `src/**/*.test.ts`), Playwright `^1.48` (e2e, `test/e2e/`)
+- **Dev environment:** docker-compose for local Postgres; `pnpm dev` brings everything up
 
-[Update with concrete versions during /create-prd]
+Major versions are pinned in `package.json` (e.g. `^4.0.0`) so the agent loop has stable reference points while still receiving minor/patch updates.
 
 ## Critical commands
 
-- `pnpm dev` — start everything locally (docker-compose + apps)
-- `pnpm test` — run all tests
+- `pnpm dev` — start everything locally (docker-compose Postgres + api + web)
+- `pnpm test` — run all tests (Vitest)
+- `pnpm test:e2e` — run Playwright e2e suite
 - `pnpm typecheck` — types across the monorepo
 - `pnpm lint` — eslint
+- `pnpm db:push` — apply Drizzle schema to the local database
+- `pnpm db:studio` — open Drizzle Studio against the local database
 - `pnpm verify` — typecheck + test + lint (the full feedback loop run by the agent before every commit)
 
 ## Workflow constitution
