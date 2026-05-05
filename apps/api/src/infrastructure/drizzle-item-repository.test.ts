@@ -86,3 +86,51 @@ describe("DrizzleItemRepository.delete", () => {
     ).rejects.toThrow(ItemNotFoundError);
   });
 });
+
+describe("DrizzleItemRepository.findById", () => {
+  it("returns the matching Item when the row exists", async () => {
+    const item = Item.create({ name: "milk", quantity: 1 });
+    await repo.insert(item);
+    const found = await repo.findById(item.id);
+    expect(found?.id).toBe(item.id);
+    expect(found?.name).toBe("milk");
+  });
+
+  it("returns undefined when no row matches", async () => {
+    const found = await repo.findById("00000000-0000-0000-0000-000000000000");
+    expect(found).toBeUndefined();
+  });
+});
+
+describe("DrizzleItemRepository.update", () => {
+  it("persists the new field values", async () => {
+    const item = Item.create({ name: "milk", quantity: 1 });
+    await repo.insert(item);
+    const changed = item.withChanges({ name: "soy milk", quantity: 3 });
+    await repo.update(changed);
+    const persisted = await repo.findById(item.id);
+    expect(persisted?.name).toBe("soy milk");
+    expect(persisted?.quantity).toBe(3);
+  });
+
+  it("preserves bought and createdAt", async () => {
+    const item = Item.create({ name: "milk", quantity: 1 });
+    await repo.insert(item);
+    const changed = item.withChanges({ name: "bread" });
+    await repo.update(changed);
+    const persisted = await repo.findById(item.id);
+    expect(persisted?.bought).toBe(false);
+    expect(persisted?.createdAt.toISOString()).toBe(item.createdAt.toISOString());
+  });
+
+  it("throws ItemNotFoundError when no row matches the id", async () => {
+    const ghost = Item.rehydrate({
+      id: "00000000-0000-0000-0000-000000000000",
+      name: "ghost",
+      quantity: 1,
+      bought: false,
+      createdAt: new Date(),
+    });
+    await expect(repo.update(ghost)).rejects.toThrow(ItemNotFoundError);
+  });
+});
