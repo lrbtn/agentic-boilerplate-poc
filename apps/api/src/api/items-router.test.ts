@@ -1,5 +1,5 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
-import { ItemListSchema } from "@app/contracts";
+import { ItemListSchema, ItemSchema, ValidationErrorSchema } from "@app/contracts";
 import { createApp } from "../main.js";
 import { createDb, createPool } from "../infrastructure/db.js";
 import { items } from "../infrastructure/schema.js";
@@ -37,5 +37,58 @@ describe("GET /items", () => {
     expect(body.map((i) => i.name)).toEqual(["u-new", "u-old", "b"]);
     expect(body[0]?.quantity).toBe(2);
     expect(body[2]?.bought).toBe(true);
+  });
+});
+
+async function postItem(body: unknown): Promise<Response> {
+  return app.request("/items", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body),
+  });
+}
+
+describe("POST /items", () => {
+  it("returns 201 with the created Item on a valid body", async () => {
+    const res = await postItem({ name: "milk", quantity: 2 });
+    expect(res.status).toBe(201);
+    const body = ItemSchema.parse(await res.json());
+    expect(body.name).toBe("milk");
+    expect(body.quantity).toBe(2);
+    expect(body.bought).toBe(false);
+  });
+
+  it("persists the new Item so a subsequent GET returns it", async () => {
+    const created = ItemSchema.parse(await (await postItem({ name: "bread", quantity: 1 })).json());
+    const list = ItemListSchema.parse(await (await app.request("/items")).json());
+    expect(list.map((i) => i.id)).toContain(created.id);
+  });
+
+  it("trims surrounding whitespace from the name before persisting", async () => {
+    const res = await postItem({ name: "  eggs  ", quantity: 1 });
+    expect(res.status).toBe(201);
+    const body = ItemSchema.parse(await res.json());
+    expect(body.name).toBe("eggs");
+  });
+
+  it.each([
+    { case: "empty name", body: { name: "", quantity: 1 } },
+    { case: "whitespace-only name", body: { name: "   ", quantity: 1 } },
+    { case: "name longer than 80", body: { name: "a".repeat(81), quantity: 1 } },
+    { case: "quantity 0", body: { name: "milk", quantity: 0 } },
+    { case: "quantity 1000", body: { name: "milk", quantity: 1000 } },
+    { case: "non-integer quantity", body: { name: "milk", quantity: 1.5 } },
+  ])("returns 400 with a structured error on $case", async ({ body }) => {
+    const res = await postItem(body);
+    expect(res.status).toBe(400);
+    const parsed = ValidationErrorSchema.parse(await res.json());
+    expect(parsed.error).toBe("validation");
+    expect(parsed.message.length).toBeGreaterThan(0);
+  });
+
+  it("does not persist Items rejected by validation", async () => {
+    await postItem({ name: "", quantity: 1 });
+    const list = ItemListSchema.parse(await (await app.request("/items")).json());
+    expect(list).toEqual([]);
   });
 });

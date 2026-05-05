@@ -1,2 +1,9 @@
-export { ItemSchema, ItemListSchema, ItemId, type Item } from "./item.js";
+export {
+  ItemSchema,
+  ItemListSchema,
+  ItemId,
+  CreateItemInput,
+  ValidationErrorSchema,
+  type Item,
+} from "./item.js";
 export { itemsContract } from "./contract.js";
