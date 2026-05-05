@@ -1,9 +1,14 @@
-import type { Item } from "../domain/item.js";
+import { Item } from "../domain/item.js";
 import type { ItemRepository } from "./item-repository.js";
 
-export async function addItem(_args: {
+export async function addItem({
+  repo,
+  input,
+}: {
   repo: ItemRepository;
   input: { name: string; quantity: number };
 }): Promise<Item> {
-  throw new Error("addItem not implemented");
+  const item = Item.create(input);
+  await repo.insert(item);
+  return item;
 }

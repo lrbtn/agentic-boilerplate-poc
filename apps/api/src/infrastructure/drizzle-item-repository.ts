@@ -14,6 +14,10 @@ export class DrizzleItemRepository implements ItemRepository {
       .orderBy(asc(items.bought), desc(items.createdAt));
     return rows.map(toDomain);
   }
+
+  async insert(_item: Item): Promise<void> {
+    throw new Error("DrizzleItemRepository.insert not implemented");
+  }
 }
 
 function toDomain(row: ItemRow): Item {
