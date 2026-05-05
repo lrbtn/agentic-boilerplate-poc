@@ -1,3 +1,4 @@
+import { AddItemForm } from "./add-item-form.js";
 import { useItems } from "./use-items.js";
 
 export function ListView() {
@@ -6,6 +7,7 @@ export function ListView() {
   return (
     <main className="mx-auto max-w-md p-8">
       <h1 className="mb-4 text-2xl font-semibold">Grocery List</h1>
+      <AddItemForm />
       {isPending ? null : isError ? (
         <p data-testid="list-error" className="text-red-600">
           Could not load the list. Try again later.
@@ -15,7 +17,7 @@ export function ListView() {
       ) : (
         <ul>
           {data?.map((item) => (
-            <li key={item.id}>
+            <li key={item.id} data-testid="item-row">
               {item.name} × {item.quantity}
             </li>
           ))}
