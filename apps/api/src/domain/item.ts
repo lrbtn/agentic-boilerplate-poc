@@ -47,6 +47,10 @@ export class Item {
     const quantity = validateQuantity(snapshot.quantity);
     return new Item(snapshot.id, name, quantity, snapshot.bought, snapshot.createdAt);
   }
+
+  withChanges(_changes: { name?: string; quantity?: number }): Item {
+    return this;
+  }
 }
 
 function validateName(raw: string): string {

@@ -9,3 +9,6 @@ playwright-report/
 test-results/
 .DS_Store
 coverage/
+agent-loop/logs/
+agent-loop/main.pid
+agent-loop/state

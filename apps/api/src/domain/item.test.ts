@@ -66,3 +66,51 @@ describe("Item.create — bought default", () => {
     expect(item.bought).toBe(false);
   });
 });
+
+describe("Item.withChanges", () => {
+  it("returns a new Item with the updated name", () => {
+    const item = Item.create({ name: "milk", quantity: 1 });
+    const updated = item.withChanges({ name: "soy milk" });
+    expect(updated.name).toBe("soy milk");
+  });
+
+  it("returns a new Item with the updated quantity", () => {
+    const item = Item.create({ name: "milk", quantity: 1 });
+    const updated = item.withChanges({ quantity: 3 });
+    expect(updated.quantity).toBe(3);
+  });
+
+  it("preserves id, bought, and createdAt across changes", () => {
+    const item = Item.create({ name: "milk", quantity: 1 });
+    const updated = item.withChanges({ name: "soy milk", quantity: 2 });
+    expect(updated.id).toBe(item.id);
+    expect(updated.bought).toBe(item.bought);
+    expect(updated.createdAt).toBe(item.createdAt);
+  });
+
+  it("trims the new name", () => {
+    const item = Item.create({ name: "milk", quantity: 1 });
+    const updated = item.withChanges({ name: "  bread  " });
+    expect(updated.name).toBe("bread");
+  });
+
+  it("re-asserts invariants on the new name", () => {
+    const item = Item.create({ name: "milk", quantity: 1 });
+    expect(() => item.withChanges({ name: "" })).toThrow(ItemValidationError);
+    expect(() => item.withChanges({ name: "a".repeat(81) })).toThrow(ItemValidationError);
+  });
+
+  it("re-asserts invariants on the new quantity", () => {
+    const item = Item.create({ name: "milk", quantity: 1 });
+    expect(() => item.withChanges({ quantity: 0 })).toThrow(ItemValidationError);
+    expect(() => item.withChanges({ quantity: 1000 })).toThrow(ItemValidationError);
+    expect(() => item.withChanges({ quantity: 1.5 })).toThrow(ItemValidationError);
+  });
+
+  it("returns the same Item when no changes are supplied", () => {
+    const item = Item.create({ name: "milk", quantity: 1 });
+    const updated = item.withChanges({});
+    expect(updated.name).toBe(item.name);
+    expect(updated.quantity).toBe(item.quantity);
+  });
+});
