@@ -1,9 +1,10 @@
 import { Hono } from "hono";
-import { CreateItemInput, ItemListSchema, ItemSchema, itemsContract } from "@app/contracts";
+import { CreateItemInput, ItemId, ItemListSchema, ItemSchema, itemsContract } from "@app/contracts";
 import { addItem } from "../application/add-item.js";
+import { deleteItem } from "../application/delete-item.js";
 import type { ItemRepository } from "../application/item-repository.js";
 import { listItems } from "../application/list-items.js";
-import { ItemValidationError, type Item } from "../domain/item.js";
+import { ItemNotFoundError, ItemValidationError, type Item } from "../domain/item.js";
 
 export function createItemsRouter({ repo }: { repo: ItemRepository }): Hono {
   const router = new Hono();
@@ -29,6 +30,23 @@ export function createItemsRouter({ repo }: { repo: ItemRepository }): Hono {
     } catch (err) {
       if (err instanceof ItemValidationError) {
         return c.json({ error: "validation" as const, message: err.message }, 400);
+      }
+      throw err;
+    }
+  });
+
+  router.delete(itemsContract.deleteItem.path, async (c) => {
+    const idParam = c.req.param("id");
+    const parsedId = ItemId.safeParse(idParam);
+    if (!parsedId.success) {
+      return c.json({ error: "not_found" as const, message: `Item not found: ${idParam}` }, 404);
+    }
+    try {
+      await deleteItem({ repo, id: parsedId.data });
+      return c.body(null, 204);
+    } catch (err) {
+      if (err instanceof ItemNotFoundError) {
+        return c.json({ error: "not_found" as const, message: err.message }, 404);
       }
       throw err;
     }
