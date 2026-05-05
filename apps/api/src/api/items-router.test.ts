@@ -217,4 +217,43 @@ describe("PATCH /items/:id", () => {
     const persisted = list.find((i) => i.id === created.id);
     expect(persisted?.name).toBe("milk");
   });
+
+  it("returns 200 with bought=true after a toggle", async () => {
+    const created = ItemSchema.parse(
+      await (await postItem({ name: "milk", quantity: 1 })).json(),
+    );
+    const res = await patchItem(created.id, { bought: true });
+    expect(res.status).toBe(200);
+    const body = ItemSchema.parse(await res.json());
+    expect(body.bought).toBe(true);
+    expect(body.name).toBe("milk");
+    expect(body.quantity).toBe(1);
+  });
+
+  it("returns 200 with bought=false after un-toggling", async () => {
+    const created = ItemSchema.parse(
+      await (await postItem({ name: "milk", quantity: 1 })).json(),
+    );
+    await patchItem(created.id, { bought: true });
+    const res = await patchItem(created.id, { bought: false });
+    expect(res.status).toBe(200);
+    const body = ItemSchema.parse(await res.json());
+    expect(body.bought).toBe(false);
+  });
+
+  it("moves a freshly-bought Item to the bought group in GET /items", async () => {
+    const a = ItemSchema.parse(await (await postItem({ name: "a", quantity: 1 })).json());
+    const b = ItemSchema.parse(await (await postItem({ name: "b", quantity: 1 })).json());
+    await patchItem(a.id, { bought: true });
+    const list = ItemListSchema.parse(await (await app.request("/items")).json());
+    expect(list.map((i) => i.id)).toEqual([b.id, a.id]);
+    expect(list.find((i) => i.id === a.id)?.bought).toBe(true);
+  });
+
+  it("returns 404 with a structured error when toggling a missing Item", async () => {
+    const res = await patchItem("00000000-0000-0000-0000-000000000000", { bought: true });
+    expect(res.status).toBe(404);
+    const body = NotFoundErrorSchema.parse(await res.json());
+    expect(body.error).toBe("not_found");
+  });
 });
