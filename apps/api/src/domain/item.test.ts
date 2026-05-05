@@ -113,4 +113,25 @@ describe("Item.withChanges", () => {
     expect(updated.name).toBe(item.name);
     expect(updated.quantity).toBe(item.quantity);
   });
+
+  it("returns a new Item with bought set to true", () => {
+    const item = Item.create({ name: "milk", quantity: 1 });
+    const updated = item.withChanges({ bought: true });
+    expect(updated.bought).toBe(true);
+  });
+
+  it("returns a new Item with bought set back to false", () => {
+    const bought = Item.create({ name: "milk", quantity: 1 }).withChanges({ bought: true });
+    const updated = bought.withChanges({ bought: false });
+    expect(updated.bought).toBe(false);
+  });
+
+  it("preserves name, quantity, id, and createdAt when only bought changes", () => {
+    const item = Item.create({ name: "milk", quantity: 3 });
+    const updated = item.withChanges({ bought: true });
+    expect(updated.name).toBe(item.name);
+    expect(updated.quantity).toBe(item.quantity);
+    expect(updated.id).toBe(item.id);
+    expect(updated.createdAt).toBe(item.createdAt);
+  });
 });
