@@ -1,27 +1,33 @@
 # Domain Glossary
 
-> **Placeholder.** This file is the canonical vocabulary for this project's domain. It is read by the agent loop on every iteration so that all code, tests, commits, and docs use consistent terms.
->
-> **Populate during phase 1 (`/ideation`) and phase 2 (`/create-prd`).** The skills will help identify the key domain terms.
->
-> **Format:** group terms by category. For each term, give a short definition. Be specific. "User" is too vague — say "Customer", "Admin", "Visitor".
->
-> **Keep this short.** If it's longer than one screen, the project is too big for the boilerplate's intended scope.
+> Canonical vocabulary for the Grocery List PoC. Read by the agent loop on every iteration. All code, tests, commits, and docs use these terms consistently.
 
 ## Core entities
 
-(to be filled — example: `Customer`, `Order`, `Invoice`)
+- **Item** — a single entry on the List. Has a `name` (string, trimmed, 1–80 chars), a `quantity` (integer, 1–999), a `bought` flag (boolean), and a `createdAt` timestamp. Identified by an opaque `id`.
+- **List** — the ordered collection of Items. There is exactly one List per running instance, shared across all visitors. Not a persisted entity itself — derived by reading all Items.
+- **Shopper** — the anonymous person interacting with the List. There is no authentication, no identity, and no per-Shopper state. Use this term instead of "user" when describing UI interactions.
 
 ## Actions / use cases
 
-(to be filled — example: `Place order`, `Refund payment`)
+- **Add Item** — create a new Item with a name and quantity. Newly added Items are unbought by default.
+- **Edit Item** — change an Item's name and/or quantity after it has been added.
+- **Toggle Bought** — flip an Item's `bought` flag in either direction.
+- **Delete Item** — permanently remove an Item from the List.
+- **View List** — fetch and render all Items, ordered with unbought Items first, then bought Items, each group sorted by `createdAt` descending.
 
 ## Out-of-domain terms (DO NOT use in this codebase)
 
-(to be filled — example: "user" used loosely, when we have specific roles)
+- **User** — too vague. Use **Shopper** for the human at the keyboard, or omit entirely (most domain logic is Shopper-agnostic).
+- **Task / Todo / Done / Complete** — this is a grocery list, not a task tracker. Use **Item** and **bought**, never "task" or "complete".
+- **Cart / Basket / Checkout** — no commerce semantics. The List is not a cart.
+- **Category / Tag / Aisle** — Items are uncategorized. Do not introduce grouping concepts.
 
 ## Examples of correct vs incorrect usage
 
-(to be filled — example:
-- ✅ "the Customer placed an Order"
-- ❌ "the user submitted the form")
+- ✅ "the Shopper marks an Item as bought"
+- ❌ "the user completes the task"
+- ✅ "Add Item validation rejects empty names"
+- ❌ "create todo validation rejects empty titles"
+- ✅ "the List renders unbought Items first"
+- ❌ "the cart shows pending items at the top"
