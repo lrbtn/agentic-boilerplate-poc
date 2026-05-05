@@ -3,6 +3,7 @@ import type { Item, UpdateItemInput } from "@app/contracts";
 import { UpdateItemInput as UpdateItemInputSchema } from "@app/contracts";
 import { useDeleteItem } from "./use-delete-item.js";
 import { useEditItem } from "./use-edit-item.js";
+import { useToggleBought } from "./use-toggle-bought.js";
 
 type EditingField = "name" | "quantity" | null;
 
@@ -13,6 +14,7 @@ export function ItemRow({ item }: { item: Item }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const editItem = useEditItem();
   const deleteItem = useDeleteItem();
+  const toggleBought = useToggleBought();
 
   useEffect(() => {
     if (editing !== null) {
@@ -80,8 +82,24 @@ export function ItemRow({ item }: { item: Item }) {
     });
   }
 
+  function onToggleBought() {
+    setError(null);
+    toggleBought.mutate(
+      { id: item.id, bought: !item.bought },
+      { onError: (err) => setError(err.message) },
+    );
+  }
+
   return (
     <li data-testid="item-row" className="flex flex-wrap items-center gap-2 py-1">
+      <input
+        type="checkbox"
+        data-testid="item-bought"
+        aria-label={`mark ${item.name} as bought`}
+        checked={item.bought}
+        onChange={onToggleBought}
+        className="h-4 w-4 cursor-pointer"
+      />
       {editing === "name" ? (
         <input
           ref={inputRef}
