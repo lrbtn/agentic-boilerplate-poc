@@ -11,4 +11,8 @@ export class InMemoryItemRepository implements ItemRepository {
   async findAll(): Promise<readonly Item[]> {
     return [...this.items];
   }
+
+  async insert(item: Item): Promise<void> {
+    this.items.push(item);
+  }
 }
