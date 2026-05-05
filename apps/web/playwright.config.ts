@@ -1,6 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const PORT = 5173;
+const WEB_PORT = 5173;
+const API_PORT = 3000;
 
 export default defineConfig({
   testDir: "../../test/e2e",
@@ -8,14 +9,22 @@ export default defineConfig({
   workers: 1,
   retries: 0,
   use: {
-    baseURL: `http://localhost:${PORT}`,
+    baseURL: `http://localhost:${WEB_PORT}`,
     trace: "retain-on-failure",
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
-  webServer: {
-    command: "pnpm --filter @app/web dev",
-    url: `http://localhost:${PORT}`,
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
-  },
+  webServer: [
+    {
+      command: "pnpm --filter @app/api start",
+      url: `http://localhost:${API_PORT}/items`,
+      reuseExistingServer: !process.env.CI,
+      timeout: 60_000,
+    },
+    {
+      command: "pnpm --filter @app/web dev",
+      url: `http://localhost:${WEB_PORT}`,
+      reuseExistingServer: !process.env.CI,
+      timeout: 60_000,
+    },
+  ],
 });
