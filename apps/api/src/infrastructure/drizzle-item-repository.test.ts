@@ -3,7 +3,7 @@ import type { Pool } from "pg";
 import { createDb, createPool } from "./db.js";
 import { items } from "./schema.js";
 import { DrizzleItemRepository } from "./drizzle-item-repository.js";
-import { Item } from "../domain/item.js";
+import { Item, ItemNotFoundError } from "../domain/item.js";
 
 const pool: Pool = createPool();
 const db = createDb(pool);
@@ -59,5 +59,30 @@ describe("DrizzleItemRepository.insert", () => {
     expect(only?.quantity).toBe(2);
     expect(only?.bought).toBe(false);
     expect(only?.createdAt.toISOString()).toBe(item.createdAt.toISOString());
+  });
+});
+
+describe("DrizzleItemRepository.delete", () => {
+  it("removes the row with the given id", async () => {
+    const item = Item.create({ name: "milk", quantity: 1 });
+    await repo.insert(item);
+    await repo.delete(item.id);
+    expect(await repo.findAll()).toEqual([]);
+  });
+
+  it("leaves other rows untouched", async () => {
+    const target = Item.create({ name: "milk", quantity: 1 });
+    const survivor = Item.create({ name: "bread", quantity: 1 });
+    await repo.insert(target);
+    await repo.insert(survivor);
+    await repo.delete(target.id);
+    const remaining = await repo.findAll();
+    expect(remaining.map((i) => i.id)).toEqual([survivor.id]);
+  });
+
+  it("throws ItemNotFoundError when no row matches the id", async () => {
+    await expect(
+      repo.delete("00000000-0000-0000-0000-000000000000"),
+    ).rejects.toThrow(ItemNotFoundError);
   });
 });
