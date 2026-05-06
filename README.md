@@ -38,7 +38,7 @@ claude
 
 # Inside Claude Code, run phase 0 (one-time stack setup), then phase 1
 /bootstrap-project
-/ideation
+/ideation "feature description"
 ```
 
 After phase 3 produces issues, exit Claude Code and the human Operator runs:
